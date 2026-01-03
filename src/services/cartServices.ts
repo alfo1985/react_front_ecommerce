@@ -33,19 +33,25 @@ export const addProductToCart = async (
 };
 
 export const changeQuantity = async (
-  productId: number, 
-  quantity: number
+  cartItemId: number,
+  newQuantity: number
 ): Promise<CartItem> => {
   const token = localStorage.getItem("authToken");
-  const response = await fetch(`${API}/carts/${productId}`, {
-    method: "PATCH", // usa PATCH para actualización parcial
+
+  const response = await fetch(`${API}/carts/${cartItemId}`, {
+    method: "PUT", // ✅ IGUAL QUE POSTMAN
     headers: {
       Authorization: `${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ quantity }), // productId no hace falta porque va en la URL
+    body: JSON.stringify({
+      quantity: newQuantity, // ✅ clave correcta
+    }),
   });
-  if (!response.ok) throw new Error("Error al cambiar la cantidad del producto");
-  const json = await response.json();
-  return json.data ?? json;
+
+  if (!response.ok) {
+    throw new Error("Error al cambiar la cantidad del carrito");
+  }
+
+  return response.json();
 };

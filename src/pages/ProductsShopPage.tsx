@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import type { ProductDB } from "../models/Product";
 import { getProducts } from "../services/productsService";
+import { addProductToCart } from "../services/cartServices";
+import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 
 export default function ProductsShopPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<ProductDB[]>([]);
 
   useEffect(() => {
@@ -19,27 +22,14 @@ export default function ProductsShopPage() {
   }, []);
 
   const addToCart = async (productId: number) => {
-  try {
-    const response = await fetch("http://localhost:3000/api/cart", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-      body: JSON.stringify({
-        productId,
-        quantity: 1, // por defecto agregamos 1
-      }),
-    });
-
-    if (!response.ok) throw new Error("Error al agregar al carrito");
-
-    alert("Producto agregado al carrito ✅");
-  } catch (error) {
-    console.error(error);
-    alert("No se pudo agregar al carrito ❌");
-  }
-};
+    try {
+      await addProductToCart(productId, 1); // cantidad 1 por defecto
+        navigate("/cart");
+      console.log("Producto agregado al carrito");
+    } catch (error) {
+      console.error("Error al agregar al carrito:", error);
+    }
+  };
 
   return (
     <Layout>
@@ -51,9 +41,13 @@ export default function ProductsShopPage() {
               key={product.id}
               className="p-4 rounded-xl bg-white shadow-lg border border-gray-200 flex flex-col gap-2"
             >
-              <h2 className="text-lg font-bold text-purple-700">{product.name}</h2>
+              <h2 className="text-lg font-bold text-purple-700">
+                {product.name}
+              </h2>
               <p className="text-gray-700">{product.description}</p>
-              <p className="text-gray-900 font-semibold">Precio: ${product.price}</p>
+              <p className="text-gray-900 font-semibold">
+                Precio: ${product.price}
+              </p>
               <button
                 onClick={() => addToCart(product.id)}
                 className="bg-purple-600 text-white px-4 py-1 rounded-lg hover:bg-purple-800 mt-2"
